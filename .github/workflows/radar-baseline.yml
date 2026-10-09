@@ -1,0 +1,50 @@
+name: Refresh radar baseline
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 4 * * *'
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: radar-baseline
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          sparse-checkout: |
+            scripts/radar-baseline
+            radar
+      - name: Test and refresh public minima
+        run: |
+          python3 -m unittest discover -s scripts/radar-baseline
+          python3 scripts/radar-baseline/refresh.py radar/moscow-baseline.html
+      - name: Publish validated baseline
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add radar/moscow-baseline.html
+          git commit -m 'Refresh validated Moscow radar baseline'
+          git push origin HEAD:main
+          gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds" > /dev/null
+      - name: Verify public copy
+        run: |
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent --show-error --max-time 15 https://azimuth.dobryvpn.ru/radar/moscow-baseline.html -o /tmp/radar-public.html && cmp --silent radar/moscow-baseline.html /tmp/radar-public.html; then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo 'Published baseline did not become available' >&2
+          exit 1
