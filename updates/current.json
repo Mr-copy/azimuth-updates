@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "applicationId": "ru.azimut.driverassistant",
-  "versionCode": 59,
-  "versionName": "0.56.2",
-  "sizeBytes": 80850092,
-  "sha256": "6298ca4ba17c1319b48bba80d39517b4057a12070d9d407f5a943061b01dba02"
+  "versionCode": 60,
+  "versionName": "0.56.3",
+  "sizeBytes": 80882860,
+  "sha256": "322c57289be1c5e233eee08e1b7960a767f5f8f8114522ab296f5d22baf75e03"
 }
